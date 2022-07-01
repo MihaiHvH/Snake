@@ -5,7 +5,8 @@
 
 struct PlayerData {
 	std::pair<int, int>StartPos;// StartPos(x,y)
-	std::pair<int, int> pos; // pos(x,y)
+	std::pair<int, int> pos; // pos(x,y) HEAD POS
+	std::pair<int, int> pos2; // pos2(x, y) TAIL POS
 	int size = 5;
 	int speed = 100;
 };
@@ -19,7 +20,7 @@ struct ObjectData {
 struct TerrainData {
 	std::pair<int, int> size; //size(w, h)
 	std::set<std::pair<char, std::pair<int, int>>> pixel; //auto pixel = std::make_pair(L"M", std::make_pair(1, 1)); // pixel example
-	char chr;
+	char chr = '-';
 };
 
 struct ScreenData {

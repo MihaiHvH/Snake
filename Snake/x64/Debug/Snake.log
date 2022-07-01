@@ -1,3 +1,2 @@
 ﻿  Snake.cpp
-D:\Documents\GitHub\Snake\Snake\Snake.cpp(11,17): warning C4326: return type of 'main' should be 'int' instead of 'void'
-  Snake.vcxproj -> D:\Documents\GitHub\Snake\x64\Debug\Snake.exe
+  Snake.vcxproj -> C:\Users\tubur\Documents\GitHub\Snake\x64\Debug\Snake.exe

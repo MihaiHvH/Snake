@@ -18,9 +18,6 @@
     <ClCompile Include="Snake.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="struct.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="struct.hpp">

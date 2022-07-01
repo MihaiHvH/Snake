@@ -7,8 +7,17 @@
 
 #include "struct.hpp"
 #include "functions.hpp"
+/*
+De agaugat:
 
-void main(void) {
+	- coord ultimul pixel in struct PlayerData
+	- move up, down, (*left*)
+	- obiecte
+	- cand se spawneaza obiectele sa nu se intersecteze cu pixelii
+	- (poate) la generarea unui nr random sa se poata excluda unele (pentru obiecte) (vector)
+
+*/
+int main() {
 	srand((unsigned)time(NULL));
 	
 	functions::misc::GetWindowSize(); // get stdout window size
@@ -26,25 +35,30 @@ void main(void) {
 		if (GetKeyState(VK_ESCAPE) & 0x8000) // when esc is pressed, the game closes
 			break;						
 		
-		if ((GetAsyncKeyState(0x41) & 0x8000) && (A == 0)) { // When A is pressed
-			A = 1;
+		if ((GetAsyncKeyState(0x41) & 0x8000) && (A <= (functions::GlobalPlayerData.speed / 100) - 1)) { // When A is pressed
+			A++;
 			functions::player::MoveLeft();
+			functions::terrain::UpdateMatrice(std::make_pair(L"A", functions::GlobalPlayerData.pos2));
 		}
 		else if (GetAsyncKeyState(0x41) == 0) A = 0;
-		if ((GetAsyncKeyState(0x44) & 0x8000) && (D == 0)) { // When D is pressed
-			D = 1;
+		if ((GetAsyncKeyState(0x44) & 0x8000) && (D <= (functions::GlobalPlayerData.speed / 100) - 1)) { // When D is pressed
+			D++;
 			functions::player::MoveRight();
+			functions::terrain::UpdateMatrice(std::make_pair(L"A", functions::GlobalPlayerData.pos2));
 		}
 		else if (GetAsyncKeyState(0x44) == 0) D = 0;
-		if ((GetAsyncKeyState(0x57) & 0x8000) && (W == 0)) { // When W is pressed
-			W = 1;
+		if ((GetAsyncKeyState(0x57) & 0x8000) && (W <= (functions::GlobalPlayerData.speed / 100) - 1)) { // When W is pressed
+			W++;
 			functions::player::MoveUp();
+			functions::terrain::UpdateMatrice(std::make_pair(L"A", functions::GlobalPlayerData.pos2));
 		}
 		else if (GetAsyncKeyState(0x57) == 0) W = 0;
-		if ((GetAsyncKeyState(0x53) & 0x8000) && (S == 0)) { // When S is pressed
-			S = 1;
+		if ((GetAsyncKeyState(0x53) & 0x8000) && (S <= (functions::GlobalPlayerData.speed / 100) - 1)) { // When S is pressed
+			S++;
 			functions::player::MoveDown();
+			functions::terrain::UpdateMatrice(std::make_pair(L"A", functions::GlobalPlayerData.pos2));
 		}
 		else if (GetAsyncKeyState(0x53) == 0) S = 0;
 	}
+	return 0;
 }
