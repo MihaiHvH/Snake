@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <set>
+#include <utility>
 
 struct PlayerData {
 	std::pair<int, int>StartPos;// StartPos(x,y)
@@ -14,7 +16,12 @@ struct ObjectData {
 	int saturation = 1;
 };
 
-struct TerainData {
+struct TerrainData {
 	std::pair<int, int> size; //size(w, h)
+	std::set<std::pair<char, std::pair<int, int>>> pixel; //auto pixel = std::make_pair(L"M", std::make_pair(1, 1)); // pixel example
 	char chr;
+};
+
+struct ScreenData {
+	std::pair<int, int> size; //size(w, h)
 };
