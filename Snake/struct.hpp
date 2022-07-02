@@ -25,4 +25,9 @@ struct TerrainData {
 
 struct ScreenData {
 	std::pair<int, int> size; //size(w, h)
+	std::string consoleName = "";
+};
+
+struct DebugData {
+	std::pair<int, int> size; // size(w, h)
 };
