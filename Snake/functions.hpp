@@ -9,7 +9,7 @@
 #include <ctime>
 #include <string>
 
-#define DEBUG
+//#define DEBUG
 
 namespace functions {
 	PlayerData GlobalPlayerData = PlayerData();
@@ -29,13 +29,16 @@ namespace functions {
 			| | __  |  _  | | |\/| | |  __|    | | | | | | | | |  __|  |    /    | | 
 			| |_\ \ | | | | | |  | | | |___    \ \_/ / \ \_/ / | |___  | |\ \    |_| 
 			 \____/ \_| |_/ \_|  |_/ \____/     \___/   \___/  \____/  \_| \_|   (_)
-			 Press 'ESC' to exit the game or 'SPACE' to restart, thanks for playing !)" << '\n';
+			 Press 'ESC' to exit the game or 'SPACE' to restart, thanks for playing !)" << 
+						 R"(
+							Total size: )" << GlobalPlayerData.size << '\n';
 		}
 		void ClearGameData() {
 			GlobalPlayerData.backupPixels.clear();
 			GlobalPlayerData.pixels.clear();
 			GlobalPlayerData.size = 5;
 			GlobalPlayerData.speed = 100;
+			GlobalObjectData.spawned = false;
 		}
 		void SetGameConsoleTitle(std::string name) {
 			::SetConsoleTitleA(name.c_str());
@@ -94,12 +97,12 @@ namespace functions {
 
 			return size;
 		}
-		int GenerateRandomNumber(int min, int max, std::vector<int>exclude = {}) {
+		int GenerateRandomNumber(int min, int max, std::vector<std::pair<int, int>>exclude = {}) {
 			int nr = 0;
 			nr = min + rand() / (RAND_MAX / (max - min));
 
 			for (auto i : exclude) {
-				if (i == nr)
+				if (i.first == nr or i.second == nr)
 					return GenerateRandomNumber(min, max, exclude);
 			}
 
@@ -180,6 +183,33 @@ namespace functions {
 					GlobalPlayerData.pixels.at(i) = NewPos;
 				else
 					GlobalPlayerData.pixels.at(i) = GlobalPlayerData.backupPixels.at(static_cast<std::vector<std::pair<int, int>, std::allocator<std::pair<int, int>>>::size_type>(i) - 1);
+			}
+		}
+		void Grow() {
+			GlobalPlayerData.size += 1;
+			if (terrain::ReadMatricePixel(std::make_pair(GlobalPlayerData.pos2.first + 1, GlobalPlayerData.pos2.second)) == '-') {
+				std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first + 1, GlobalPlayerData.pos2.second);
+				GlobalPlayerData.pos2.swap(NewPos2);
+				GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
+				GlobalPlayerData.backupPixels.push_back(GlobalPlayerData.pos2);
+			}
+			else if (terrain::ReadMatricePixel(std::make_pair(GlobalPlayerData.pos2.first - 1, GlobalPlayerData.pos2.second)) == '-') {
+				std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first - 1, GlobalPlayerData.pos2.second);
+				GlobalPlayerData.pos2.swap(NewPos2);
+				GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
+				GlobalPlayerData.backupPixels.push_back(GlobalPlayerData.pos2);
+			}
+			else if (terrain::ReadMatricePixel(std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second + 1)) == '-') {
+				std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second + 1);
+				GlobalPlayerData.pos2.swap(NewPos2);
+				GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
+				GlobalPlayerData.backupPixels.push_back(GlobalPlayerData.pos2);
+			}
+			else if (terrain::ReadMatricePixel(std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second - 1)) == '-') {
+				std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second - 1);
+				GlobalPlayerData.pos2.swap(NewPos2);
+				GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
+				GlobalPlayerData.backupPixels.push_back(GlobalPlayerData.pos2);
 			}
 		}
 		void MoveLeft() {
@@ -269,11 +299,13 @@ namespace functions {
 		};
 	}
 	namespace object {
-		void GeneratePos() {
-		
-		};
-		void GetPos() {
-		
+		void Spawn() {
+			if (!GlobalObjectData.spawned) {
+				std::pair<int, int> pos = { misc::GenerateRandomNumber(1, GlobalScreenData.size.first, { GlobalPlayerData.pixels }), misc::GenerateRandomNumber(1, GlobalScreenData.size.second, { GlobalPlayerData.pixels }) };
+				terrain::UpdateMatrice(std::make_pair(L"o", std::make_pair(pos.first, pos.second)));
+				GlobalObjectData.pos.swap(pos);
+				GlobalObjectData.spawned = true;
+			}
 		};
 	}
 	namespace debug {
@@ -291,3 +323,5 @@ namespace functions {
 		}
 	}
 }
+
+//Self made by MihaiHvH // last updated - 11:46 GMT+2

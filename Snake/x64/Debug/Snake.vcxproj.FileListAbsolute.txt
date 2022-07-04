@@ -1,4 +1,0 @@
-D:\Documents\GitHub\Snake\x64\Debug\Snake.exe.lastcodeanalysissucceeded
-D:\Documents\GitHub\Snake\Snake\x64\Debug\NativeCodeAnalysis.read.1.tlog
-C:\Users\tubur\Documents\GitHub\Snake\x64\Debug\Snake.exe.lastcodeanalysissucceeded
-C:\Users\tubur\Documents\GitHub\Snake\Snake\x64\Debug\NativeCodeAnalysis.read.1.tlog

@@ -15,7 +15,7 @@ struct PlayerData {
 
 struct ObjectData {
 	std::pair<int, int> pos; // pos(x,y)
-	std::vector<std::pair<int, int>> posHistory;
+	bool spawned = false;
 	int saturation = 1;
 };
 
@@ -34,3 +34,5 @@ struct DebugData {
 	std::pair<int, int> size; // size(w, h)
 	std::pair<int, int> lastPos2;
 };
+
+//Self made by MihaiHvH // last updated - 11:44 GMT+2
