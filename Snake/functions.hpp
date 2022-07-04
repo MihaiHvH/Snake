@@ -19,6 +19,24 @@ namespace functions {
 	DebugData GlobalDebugData = DebugData();
 
 	namespace misc {
+		void GameOver() {
+			system("CLS");
+			srand((unsigned)time(NULL));
+			std::cout << R"(
+			 _____    ___    __  __   _____     _____   _   _   _____   _____     _  
+			|  __ \  / _ \  |  \/  | |  ___|   |  _  | | | | | |  ___| | ___ \   | | 
+			| |  \/ / /_\ \ | .  . | | |__     | | | | | | | | | |__   | |_/ /   | | 
+			| | __  |  _  | | |\/| | |  __|    | | | | | | | | |  __|  |    /    | | 
+			| |_\ \ | | | | | |  | | | |___    \ \_/ / \ \_/ / | |___  | |\ \    |_| 
+			 \____/ \_| |_/ \_|  |_/ \____/     \___/   \___/  \____/  \_| \_|   (_)
+			 Press 'ESC' to exit the game or 'SPACE' to restart, thanks for playing !)" << '\n';
+		}
+		void ClearGameData() {
+			GlobalPlayerData.backupPixels.clear();
+			GlobalPlayerData.pixels.clear();
+			GlobalPlayerData.size = 5;
+			GlobalPlayerData.speed = 100;
+		}
 		void SetGameConsoleTitle(std::string name) {
 			::SetConsoleTitleA(name.c_str());
 			GlobalScreenData.consoleName = name;
@@ -76,7 +94,6 @@ namespace functions {
 
 			return size;
 		}
-		bool GeneratedStartPos = false;
 		int GenerateRandomNumber(int min, int max, std::vector<int>exclude = {}) {
 			int nr = 0;
 			nr = min + rand() / (RAND_MAX / (max - min));
@@ -95,7 +112,7 @@ namespace functions {
 		}
 		char ReadMatricePixel(std::pair<int, int> pixel) {
 			DWORD dw;
-			COORD pixelLocation;
+			COORD pixelLocation{};
 			HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
 			if (hStdOut == INVALID_HANDLE_VALUE) {
@@ -110,39 +127,12 @@ namespace functions {
 			ReadConsoleOutputCharacterA(hStdOut, &str, 1, pixelLocation, &dw);
 			return str;
 		}
-		std::string PixelOrientationToAnother(std::pair<int, int> pixelOri, std::pair<int, int> pixel) {
-			if (pixelOri.first == pixel.first - 1)
-				return "right";
-			if (pixelOri.first - 1 == pixel.first)
-				return "left";
-			if (pixelOri.second == pixel.second - 1)
-				return "up";
-			if (pixelOri.second - 1 == pixel.second)
-				return "down";
-
-			return "An error has occured, check the pixels pos!";
-		}
-		std::string PixelOrientation(std::pair<int, int> pixel) {
-			if (ReadMatricePixel(std::make_pair(pixel.first + 1, pixel.second)) == '+')
-				return "right";
-			if (ReadMatricePixel(std::make_pair(pixel.first - 1, pixel.second)) == '+')
-				return "left";
-			if (ReadMatricePixel(std::make_pair(pixel.first, pixel.second - 1)) == '+')
-				return "up";
-			if (ReadMatricePixel(std::make_pair(pixel.first, pixel.second + 1)) == '+')
-				return "down";
-
-			return "An error has occured, check pixel pos values !";
-		}
 		void SetData(int w, int h, char chr) {
 			auto sz = std::make_pair(w, h);
 			GlobalTerrainData.size.swap(sz);
 			GlobalTerrainData.chr = chr;
 		}
 		void GenerateMatrice() {
-			if (!misc::GeneratedStartPos)
-				return;
-
 			for (int i = 1; i <= GlobalTerrainData.size.second; ++i) {
 #ifdef DEBUG
 				if (i > 1) std::cout << '\n';
@@ -154,7 +144,7 @@ namespace functions {
 		}
 		void UpdateMatrice(std::pair<LPCWSTR, std::pair<int, int>> pixel) {
 			DWORD dw;
-			COORD pixelLocation;
+			COORD pixelLocation{};
 			HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
 			if (hStdOut == INVALID_HANDLE_VALUE) {
@@ -165,12 +155,6 @@ namespace functions {
 			pixelLocation.Y = pixel.second.second - 1;
 
 			WriteConsoleOutputCharacterW(hStdOut, pixel.first, 1, pixelLocation, &dw);
-		}
-		void UpdateMatriceString(std::pair<std::string, std::pair<int, int>> pixel) {
-			std::wstring pixelW = std::wstring(pixel.first.begin(), pixel.first.end());
-			LPCWSTR pixelChr = pixelW.c_str();
-
-			UpdateMatrice(std::make_pair(pixelChr, std::make_pair(pixel.second.first, pixel.second.second)));
 		}
 		void GenerateEmptySpace(std::pair<int, int> size) {
 			auto OldSize = misc::GetWindowSizePair();
@@ -186,122 +170,67 @@ namespace functions {
 		}
 	}
 	namespace player {
+		void UpdatePixels(std::pair<int, int> NewPos) {
+			for (int i = 0; i <= GlobalPlayerData.size - 1; ++i) {
+				GlobalPlayerData.backupPixels.at(i) = GlobalPlayerData.pixels.at(i);
+			}
+
+			for (int i = 0; i <= GlobalPlayerData.size - 1; ++i) {
+				if (i == 0)
+					GlobalPlayerData.pixels.at(i) = NewPos;
+				else
+					GlobalPlayerData.pixels.at(i) = GlobalPlayerData.backupPixels.at(static_cast<std::vector<std::pair<int, int>, std::allocator<std::pair<int, int>>>::size_type>(i) - 1);
+			}
+		}
 		void MoveLeft() {
-			auto NewPos = std::make_pair(GlobalPlayerData.pos.first - 1, GlobalPlayerData.pos.second);
-			auto NewPos2 = std::make_pair((GlobalPlayerData.pos.first + GlobalPlayerData.size) - 2, GlobalPlayerData.pos2.second);
-			auto Orientation = terrain::PixelOrientation(GlobalPlayerData.pos2);
+			std::pair<int, int> NewPos = std::make_pair(GlobalPlayerData.pos.first - 1, GlobalPlayerData.pos.second);
+			std::pair<int, int> NewPos2 = GlobalPlayerData.pixels.at(static_cast<std::vector<std::pair<int, int>, std::allocator<std::pair<int, int>>>::size_type>(GlobalPlayerData.size) - 2);
 
-			if (Orientation == "right")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first + 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "left")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first - 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "up")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second - 1);
-			else if (Orientation == "down")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second + 1);
+			UpdatePixels(NewPos);
 
-			if (NewPos.first <= 0) {
-				NewPos = std::make_pair(GlobalScreenData.size.first, GlobalPlayerData.pos.second);
-
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L"<", std::make_pair(GlobalScreenData.size.first, GlobalPlayerData.pos.second)));
-			}
-			else if (NewPos.first <= GlobalScreenData.size.first) {
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L"<", std::make_pair(GlobalPlayerData.pos.first - 1, GlobalPlayerData.pos.second)));
-			}
+			terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
+			terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
+			terrain::UpdateMatrice(std::make_pair(L"<", NewPos));
 
 			GlobalPlayerData.pos.swap(NewPos);
 			GlobalPlayerData.pos2.swap(NewPos2);
 		}
 		void MoveRight() {
-			auto NewPos = std::make_pair(GlobalPlayerData.pos.first + 1, GlobalPlayerData.pos.second);
-			auto NewPos2 = std::make_pair((GlobalPlayerData.pos.first - GlobalPlayerData.size) + 2, GlobalPlayerData.pos2.second);
-			auto Orientation = terrain::PixelOrientation(GlobalPlayerData.pos2);
+			std::pair<int, int> NewPos = std::make_pair(GlobalPlayerData.pos.first + 1, GlobalPlayerData.pos.second);
+			std::pair<int, int> NewPos2 = GlobalPlayerData.pixels.at(static_cast<std::vector<std::pair<int, int>, std::allocator<std::pair<int, int>>>::size_type>(GlobalPlayerData.size) - 2);
 
-			if (Orientation == "right")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first + 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "left")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first - 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "up")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second - 1);
-			else if (Orientation == "down")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second + 1);
+			UpdatePixels(NewPos);
 
-			if (NewPos.first > GlobalScreenData.size.first) {
-				NewPos = std::make_pair(1, GlobalPlayerData.pos.second);
-
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L">", std::make_pair(1, GlobalPlayerData.pos.second)));
-			}
-			else if (NewPos.first <= GlobalScreenData.size.first) {
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L">", std::make_pair(GlobalPlayerData.pos.first + 1, GlobalPlayerData.pos.second)));
-			}
+			terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
+			terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
+			terrain::UpdateMatrice(std::make_pair(L">", NewPos));
 			
 			GlobalPlayerData.pos.swap(NewPos);
 			GlobalPlayerData.pos2.swap(NewPos2);
 		}
 		void MoveUp() {
-			auto NewPos = std::make_pair(GlobalPlayerData.pos.first, GlobalPlayerData.pos.second - 1);
-			auto NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalScreenData.size.second);
-			auto Orientation = terrain::PixelOrientation(GlobalPlayerData.pos2);
+			std::pair<int, int> NewPos = std::make_pair(GlobalPlayerData.pos.first, GlobalPlayerData.pos.second - 1);
+			std::pair<int, int> NewPos2 = GlobalPlayerData.pixels.at(static_cast<std::vector<std::pair<int, int>, std::allocator<std::pair<int, int>>>::size_type>(GlobalPlayerData.size) - 2);
 
-			if (Orientation == "right")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first + 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "left")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first - 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "up")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second - 1);
-			else if (Orientation == "down")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second + 1);
+			UpdatePixels(NewPos);
 
-			if (NewPos.second <= 0) {
-				NewPos = std::make_pair(GlobalPlayerData.pos.first, GlobalScreenData.size.second);
-
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L"^", std::make_pair(GlobalPlayerData.pos.first, GlobalScreenData.size.second)));
-			}
-			else if (NewPos.second <= GlobalScreenData.size.second) {
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L"^", std::make_pair(GlobalPlayerData.pos.first, GlobalPlayerData.pos.second - 1)));
-			}
+			terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
+			terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
+			terrain::UpdateMatrice(std::make_pair(L"^", NewPos));
+	
 
 			GlobalPlayerData.pos.swap(NewPos);
 			GlobalPlayerData.pos2.swap(NewPos2);
 		}
 		void MoveDown() {
-			auto NewPos = std::make_pair(GlobalPlayerData.pos.first, GlobalPlayerData.pos.second + 1);
-			auto NewPos2 = std::make_pair(GlobalPlayerData.pos.first, 1);
-			auto Orientation = terrain::PixelOrientation(GlobalPlayerData.pos2);
+			std::pair<int, int> NewPos = std::make_pair(GlobalPlayerData.pos.first, GlobalPlayerData.pos.second + 1);
+			std::pair<int, int> NewPos2 = GlobalPlayerData.pixels.at(static_cast<std::vector<std::pair<int, int>, std::allocator<std::pair<int, int>>>::size_type>(GlobalPlayerData.size) - 2);
 
-			if (Orientation == "right")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first + 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "left")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first - 1, GlobalPlayerData.pos2.second);
-			else if (Orientation == "up")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second - 1);
-			else if (Orientation == "down")
-				NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second + 1);
+			UpdatePixels(NewPos);
 
-			if (NewPos.second > GlobalScreenData.size.second) {
-				NewPos = std::make_pair(GlobalPlayerData.pos.first, 1);
-
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L"^", std::make_pair(GlobalPlayerData.pos.first, 1)));
-			}
-			else if (NewPos.second <= GlobalScreenData.size.second) {
-				terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
-				terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
-				terrain::UpdateMatrice(std::make_pair(L"^", std::make_pair(GlobalPlayerData.pos.first, GlobalPlayerData.pos.second + 1)));
-			}
+			terrain::UpdateMatrice(std::make_pair(L"+", GlobalPlayerData.pos));
+			terrain::UpdateMatrice(std::make_pair(L"-", GlobalPlayerData.pos2));
+			terrain::UpdateMatrice(std::make_pair(L"^", NewPos));
 			 
 			GlobalPlayerData.pos.swap(NewPos);
 			GlobalPlayerData.pos2.swap(NewPos2);
@@ -313,15 +242,11 @@ namespace functions {
 			terrain::UpdateMatrice(std::make_pair(L">", std::make_pair(pos.first, pos.second)));
 		}
 		void GenerateStartPos() {
-			if (misc::GeneratedStartPos == true)
-				return;
 			int x, y;
 			x = misc::GenerateRandomNumber(1, GlobalScreenData.size.first - 10) + GlobalPlayerData.size;
 			y = misc::GenerateRandomNumber(1, GlobalScreenData.size.second);
 
 			while (x == y) { x = misc::GenerateRandomNumber(0, 90); }
-			
-			//std::cout << x << " " << y << '\n'; //DEGUB
 			
 			auto pos0 = std::make_pair(x, y);
 			auto pos1 = std::make_pair(x, y);
@@ -331,7 +256,13 @@ namespace functions {
 			GlobalPlayerData.pos.swap(pos1);
 			GlobalPlayerData.pos2.swap(pos2);
 
-			misc::GeneratedStartPos = true;
+			GlobalPlayerData.pixels.push_back(std::make_pair(x, y));
+			GlobalPlayerData.backupPixels.push_back(std::make_pair(x, y));
+
+			for (int i = 1; i <= GlobalPlayerData.size - 1; ++i) {
+				GlobalPlayerData.pixels.push_back(std::make_pair(x - i, y));
+				GlobalPlayerData.backupPixels.push_back(std::make_pair(x - i, y));
+			}
 		};
 		std::pair<int, int> GetPos() {
 			return GlobalPlayerData.pos;
@@ -346,13 +277,17 @@ namespace functions {
 		};
 	}
 	namespace debug {
-		void Display() {
-			std::string posXY = "Pos: X: " + GlobalPlayerData.pos.first;
-			posXY += " Y: " + GlobalPlayerData.pos.second;
-			std::string pos2XY = "Pos2: X: " + GlobalPlayerData.pos2.first;
-			pos2XY += " Y: " + GlobalPlayerData.pos2.second;
-
-			terrain::UpdateMatriceString(std::make_pair("LMAO", std::make_pair(100, 10)));
+		void DisplayPos2(LPCWSTR chr, bool f = false) {
+			if (f) {
+				terrain::UpdateMatrice(std::make_pair(chr, GlobalPlayerData.pos2));
+				auto x = GlobalPlayerData.pos2;
+				GlobalDebugData.lastPos2.swap(x);
+			}
+			else if (GlobalDebugData.lastPos2 != GlobalPlayerData.pos2) {
+				terrain::UpdateMatrice(std::make_pair(chr, GlobalPlayerData.pos2));
+				auto x = GlobalPlayerData.pos2;
+				GlobalDebugData.lastPos2.swap(x);
+			}
 		}
 	}
 }

@@ -7,6 +7,8 @@ struct PlayerData {
 	std::pair<int, int>StartPos;// StartPos(x,y)
 	std::pair<int, int> pos; // pos(x,y) HEAD POS
 	std::pair<int, int> pos2; // pos2(x, y) TAIL POS
+	std::vector<std::pair<int, int>> pixels;
+	std::vector<std::pair<int, int>> backupPixels;
 	int size = 5;
 	int speed = 100;
 };
@@ -30,4 +32,5 @@ struct ScreenData {
 
 struct DebugData {
 	std::pair<int, int> size; // size(w, h)
+	std::pair<int, int> lastPos2;
 };
