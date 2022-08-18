@@ -7,8 +7,7 @@
 
 #include "struct.hpp"
 #include "functions.hpp"
-// To do: - saturation
-//		  - speed ?
+
 int main() {
 	srand((unsigned)time(NULL));
 
@@ -28,7 +27,7 @@ int main() {
 	int SPACE = 0;
 
 	functions::object::Spawn();
-
+	
 	while (true) {
 		if (GetKeyState(VK_ESCAPE) & 0x8000)
 			break;

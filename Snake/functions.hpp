@@ -37,7 +37,6 @@ namespace functions {
 			GlobalPlayerData.backupPixels.clear();
 			GlobalPlayerData.pixels.clear();
 			GlobalPlayerData.size = 5;
-			GlobalPlayerData.speed = 100;
 			GlobalObjectData.spawned = false;
 		}
 		void SetGameConsoleTitle(std::string name) {
@@ -101,7 +100,7 @@ namespace functions {
 			int nr = 0;
 			nr = min + rand() / (RAND_MAX / (max - min));
 
-			for (auto i : exclude) {
+			for (auto& i : exclude) {
 				if (i.first == nr or i.second == nr)
 					return GenerateRandomNumber(min, max, exclude);
 			}
@@ -323,5 +322,3 @@ namespace functions {
 		}
 	}
 }
-
-//Self made by MihaiHvH // last updated - 11:46 GMT+2
