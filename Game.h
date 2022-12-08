@@ -21,10 +21,12 @@ public:
 		void MoveUp();
 		void MoveDown();
 
-		bool GetPixelPos(std::pair<int, int> pixel, std::pair<int, int> detect, bool exact = false);
+		bool IsPixelPos(std::pair<int, int> pixel, std::pair<int, int> detect, bool exact = false);
+		bool IsPixelPos(std::vector<std::pair<int, int>> pixel, std::pair<int, int> detect, bool exact = false);
 
 		void GenerateObjectMap();
 		void Spawn();
 private:
+	bool BinarySearch(int n, int max, std::vector<int> v);
 	int GenerateRandomNumber(int min, int max, std::vector<std::pair<int, int>>exclude = {});
 };

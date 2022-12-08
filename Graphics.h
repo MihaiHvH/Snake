@@ -33,7 +33,8 @@ private:
     ID2D1SolidColorBrush* m_pGreen;
     ID2D1SolidColorBrush* m_pBlack;
     ID2D1SolidColorBrush* m_pYellow;
-    IDWriteTextFormat* m_pTextFormat;
+    IDWriteTextFormat* m_pText;
+    IDWriteTextFormat* m_pTextBolt;
     IDWriteFactory* m_pWriteFactory;
 };
 

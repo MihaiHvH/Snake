@@ -20,6 +20,8 @@ struct ObjectData {
 };
 
 struct ScreenData {
+	std::vector<std::pair<int, int>> maxCoordMap = { { 0, 0 }, { 0, 0 } };
 	std::pair<int, int> size;
 	std::string windowName = "";
+	bool gameOver = false;
 };

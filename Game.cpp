@@ -2,15 +2,32 @@
 #include "main.h"
 #include <random>
 
+bool pGame::BinarySearch(int n, int max, std::vector<int> v) {
+	int Sol = -1, Left = 0, Right = max;
+	while (Left <= Right) {
+		int Mid = (Left + Right) / 2;
+		if (v[Mid] == n) {
+			Sol = Mid;
+			break;
+		}
+		if (v[Mid] > n)
+			Right = Mid - 1;
+		if (v[Mid] < n)
+			Left = Mid + 1;
+	}
+	if (Sol == -1) return false;
+
+	return true;
+}
+
 int pGame::GenerateRandomNumber(int min, int max, std::vector<std::pair<int, int>> exclude) {
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	std::uniform_int_distribution<int> dist(min, max);
-	
+
 	for (auto& i : exclude)
 		if (dist(mt) == i.second or dist(mt) == i.first)
 			return GenerateRandomNumber(min, max, exclude);
-
 	return dist(mt);
 }
 
@@ -89,25 +106,25 @@ void pGame::MoveDown() {
 
 void pGame::Grow() {
 	GlobalPlayerData.size += 1;
-	if (GlobalPlayerData.pos2.first + 30 <= GlobalScreenData.size.first) {
+	if (GlobalPlayerData.pos2.first + 31 <= GlobalScreenData.size.first) {
 		std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first + 30, GlobalPlayerData.pos2.second);
 		GlobalPlayerData.pos2.swap(NewPos2);
 		GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
 		GlobalPlayerData.backupPixels.push_back(GlobalPlayerData.pos2);
 	}
-	else if (GlobalPlayerData.pos2.first - 30 >= 1) {
+	else if (GlobalPlayerData.pos2.first - 31 >= 1) {
 		std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first - 30, GlobalPlayerData.pos2.second);
 		GlobalPlayerData.pos2.swap(NewPos2);
 		GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
 		GlobalPlayerData.backupPixels.push_back(GlobalPlayerData.pos2);
 	}
-	else if (GlobalPlayerData.pos2.second + 30 <= GlobalScreenData.size.second) {
+	else if (GlobalPlayerData.pos2.second + 31 <= GlobalScreenData.size.second) {
 		std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second + 30);
 		GlobalPlayerData.pos2.swap(NewPos2);
 		GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
 		GlobalPlayerData.backupPixels.push_back(GlobalPlayerData.pos2);
 	}
-	else if (GlobalPlayerData.pos2.first - 30 >= 1) {
+	else if (GlobalPlayerData.pos2.first - 31 >= 1) {
 		std::pair<int, int> NewPos2 = std::make_pair(GlobalPlayerData.pos2.first, GlobalPlayerData.pos2.second - 30);
 		GlobalPlayerData.pos2.swap(NewPos2);
 		GlobalPlayerData.pixels.push_back(GlobalPlayerData.pos2);
@@ -118,11 +135,31 @@ void pGame::Grow() {
 void pGame::Spawn() {
 	if (!GlobalObjectData.spawned) {
 		GlobalObjectData.objectId = GenerateRandomNumber(1, GlobalObjectData.ObjectMapSize);
+
+		for (auto& i : GlobalPlayerData.pixels) {
+			if (GlobalObjectData.objectMap[GlobalObjectData.objectId].first == i.first && GlobalObjectData.objectMap[GlobalObjectData.objectId].second == i.second) {
+				Spawn();
+			}
+		}
+
 		GlobalObjectData.spawned = true;
 	}
 }
 
-bool pGame::GetPixelPos(std::pair<int, int> pixel, std::pair<int, int> detect, bool exact) {
+bool pGame::IsPixelPos(std::vector<std::pair<int, int>> pixel, std::pair<int, int> detect, bool exact) {
+	if (!exact)
+		for (auto& i : pixel) {
+			if (std::abs(i.first - detect.first) <= 20 && std::abs(i.second - detect.second) <= 20)
+				return true;
+		}
+	else
+		for (auto& i : pixel)
+			if ((detect.first >= i.first && detect.first + 20 <= i.first + 20) && (detect.second >= i.second && detect.second + 20 <= i.second + 20))
+				return true;
+	return false;
+}
+
+bool pGame::IsPixelPos(std::pair<int, int> pixel, std::pair<int, int> detect, bool exact) {
 	if (std::abs(pixel.first - detect.first) <= 20 && std::abs(pixel.second - detect.second) <= 20 && !exact)
 		return true;
 	if ((detect.first >= pixel.first && detect.first + 20 <= pixel.first + 20) && (detect.second >= pixel.second && detect.second + 20 <= pixel.second + 20))
@@ -138,12 +175,16 @@ void pGame::GenerateObjectMap() {
 	int k = 0;
 	int z = 0;
 
-	while (pos.first <= GlobalScreenData.size.first - 30) {
+	GlobalObjectData.objectMap.clear();
+	GlobalObjectData.ObjectMapSize = 0;
+
+	while (pos.first <= GlobalScreenData.size.first - 31) {
 		GlobalObjectData.objectMap.push_back({GlobalPlayerData.StartPos.first + 10 * i + 20 * i, GlobalPlayerData.StartPos.second});
 		GlobalObjectData.ObjectMapSize += 1;
 		++i;
 		pos = { GlobalPlayerData.StartPos.first + 10 * i + 20 * i, GlobalPlayerData.StartPos.second };
 	}
+	GlobalScreenData.maxCoordMap[0].first = pos.first;
 	pos = GlobalPlayerData.StartPos;
 	while (pos.first >= 1) {
 		GlobalObjectData.objectMap.push_back({GlobalPlayerData.StartPos.first - 10 * j - 20 * j, GlobalPlayerData.StartPos.second });
@@ -159,12 +200,13 @@ void pGame::GenerateObjectMap() {
 		pos = { GlobalPlayerData.StartPos.first, GlobalPlayerData.StartPos.second - 10 * k - 20 * k };
 	}
 	pos = GlobalPlayerData.StartPos;
-	while (pos.second <= GlobalScreenData.size.second - 30) {
+	while (pos.second <= GlobalScreenData.size.second - 31) {
 		GlobalObjectData.objectMap.push_back({ GlobalPlayerData.StartPos.first, GlobalPlayerData.StartPos.second + 10 * z + 20 * z });
 		GlobalObjectData.ObjectMapSize += 1;
 		++z;
 		pos = { GlobalPlayerData.StartPos.first, GlobalPlayerData.StartPos.second + 10 * z + 20 * z };
 	}
+	GlobalScreenData.maxCoordMap[0].second = pos.second;
 	pos = GlobalPlayerData.StartPos;
 	for (int hh = 0; hh < k; ++hh) {
 		for (int h = 0; h < i; ++h) {

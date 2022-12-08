@@ -9,7 +9,8 @@ pGraphics::pGraphics() :
     m_pRed(NULL),
     m_pGreen(NULL),
     m_pBlack(NULL),
-    m_pTextFormat(NULL),
+    m_pText(NULL),
+    m_pTextBolt(NULL),
     m_pWriteFactory(NULL),
     m_pYellow(NULL)
 {}
@@ -21,7 +22,8 @@ pGraphics::~pGraphics() {
     SafeRelease(&m_pGreen);
     SafeRelease(&m_pBlack);
     SafeRelease(&m_pYellow);
-    SafeRelease(&m_pTextFormat);
+    SafeRelease(&m_pText);
+    SafeRelease(&m_pTextBolt);
     SafeRelease(&m_pWriteFactory);
 }
 
@@ -38,49 +40,117 @@ void pGraphics::RunMessageLoop() {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
 
-        if ((GetAsyncKeyState(0x20) & 0x8000) && (SPACE == 0)) {
-            ++SPACE;
-            std::cout << std::to_string(rGame.GetPixelPos(rGame.GlobalPlayerData.pixels.at(0), rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId))) << std::endl;
-            OnRender();
-        }
-        else if (GetAsyncKeyState(0x20) == 0) SPACE = 0;
-
-        if ((GetAsyncKeyState(0x41) & 0x8000) && (A == 0)) {
-            ++A;
-            rGame.MoveLeft();
-            if (rGame.GetPixelPos(rGame.GlobalPlayerData.pixels.at(0), rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId), true)) {
-                rGame.Grow();
-                rGame.GlobalObjectData.spawned = false;
-                rGame.Spawn();
+        if (!rGame.GlobalScreenData.gameOver) {
+            if ((GetAsyncKeyState(0x20) & 0x8000) && (SPACE == 0)) {
+                ++SPACE;
+                OnRender();
             }
-            else if (!rGame.GetPixelPos(rGame.GlobalPlayerData.pixels.at(1), { rGame.GlobalPlayerData.pos.first - 20, rGame.GlobalPlayerData.pos.second }, true)) {
-            } 
-            else {
-                std::cout << "Game over!";
-            }
+            else if (GetAsyncKeyState(0x20) == 0) SPACE = 0;
 
-            
-            OnRender();
+            if ((GetAsyncKeyState(0x41) & 0x8000) && (A == 0)) {
+                ++A;
+                if (rGame.IsPixelPos({ rGame.GlobalPlayerData.pixels.at(0).first - 30, rGame.GlobalPlayerData.pixels.at(0).second }, rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId), true)) {
+                    rGame.MoveLeft();
+                    OnRender();
+                    rGame.Grow();
+                    rGame.GlobalObjectData.spawned = false;
+                    rGame.Spawn();
+                    OnRender();
+                }
+                else if (rGame.GlobalPlayerData.pixels[0].first - 30 < 1) {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+                else if (!rGame.IsPixelPos(rGame.GlobalPlayerData.pixels, { rGame.GlobalPlayerData.pos.first - 30, rGame.GlobalPlayerData.pos.second }, true)) {
+                    rGame.MoveLeft();
+                }
+                else {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+
+
+                OnRender();
+            }
+            else if (GetAsyncKeyState(0x41) == 0) A = 0;
+            if ((GetAsyncKeyState(0x44) & 0x8000) && (D == 0)) {
+                ++D;
+                if (rGame.IsPixelPos({ rGame.GlobalPlayerData.pixels.at(0).first + 30, rGame.GlobalPlayerData.pixels.at(0).second }, rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId), true)) {
+                    rGame.MoveRight();
+                    rGame.Grow();
+                    OnRender();
+                    rGame.GlobalObjectData.spawned = false;
+                    rGame.Spawn();
+                    OnRender();
+                }
+                else if (rGame.GlobalPlayerData.pixels[0].first + 30 + (rGame.GlobalScreenData.size.first - rGame.GlobalScreenData.maxCoordMap[0].first) >= rGame.GlobalScreenData.size.first) {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+                else if (!rGame.IsPixelPos(rGame.GlobalPlayerData.pixels, { rGame.GlobalPlayerData.pos.first + 30, rGame.GlobalPlayerData.pos.second }, true)) {
+                    rGame.MoveRight();
+                }
+                else {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+
+                OnRender();
+            }
+            else if (GetAsyncKeyState(0x44) == 0) D = 0;
+            if ((GetAsyncKeyState(0x53) & 0x8000) && (S == 0)) {
+                ++S;
+                if (rGame.IsPixelPos({ rGame.GlobalPlayerData.pixels.at(0).first, rGame.GlobalPlayerData.pixels.at(0).second + 30 }, rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId), true)) {
+                    rGame.MoveDown();
+                    rGame.Grow();
+                    OnRender();
+                    rGame.GlobalObjectData.spawned = false;
+                    rGame.Spawn();
+                    OnRender();
+                }
+                else if (rGame.GlobalPlayerData.pixels[0].second + 30 + rGame.GlobalScreenData.size.second - rGame.GlobalScreenData.maxCoordMap[0].second >= rGame.GlobalScreenData.size.second) {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+                else if (!rGame.IsPixelPos(rGame.GlobalPlayerData.pixels, { rGame.GlobalPlayerData.pos.first, rGame.GlobalPlayerData.pos.second + 30 }, true)) {
+                    rGame.MoveDown();
+                }
+                else {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+
+
+                OnRender();
+            }
+            else if (GetAsyncKeyState(0x53) == 0) S = 0;
+            if ((GetAsyncKeyState(0x57) & 0x8000) && (W == 0)) {
+                ++W;
+                if (rGame.IsPixelPos({ rGame.GlobalPlayerData.pixels.at(0).first, rGame.GlobalPlayerData.pixels.at(0).second - 30 }, rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId), true)) {
+                    rGame.MoveUp();
+                    rGame.Grow();
+                    OnRender();
+                    rGame.GlobalObjectData.spawned = false;
+                    rGame.Spawn();
+                    OnRender();
+                }
+                else if (rGame.GlobalPlayerData.pixels[0].second - 30 < 1) {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+                else if (!rGame.IsPixelPos(rGame.GlobalPlayerData.pixels, { rGame.GlobalPlayerData.pos.first, rGame.GlobalPlayerData.pos.second - 30 }, true)) {
+                    rGame.MoveUp();
+                }
+                else {
+                    rGame.GlobalScreenData.gameOver = true;
+                    std::cout << "Game over!";
+                }
+
+
+                OnRender();
+            }
+            else if (GetAsyncKeyState(0x57) == 0) W = 0;
         }
-        else if (GetAsyncKeyState(0x41) == 0) A = 0;
-        if ((GetAsyncKeyState(0x44) & 0x8000) && (D == 0)) {
-            ++D;
-            rGame.MoveRight();
-            OnRender();
-        }
-        else if (GetAsyncKeyState(0x44) == 0) D = 0;
-        if ((GetAsyncKeyState(0x53) & 0x8000) && (S == 0)) {
-            ++S;
-            rGame.MoveDown();
-            OnRender();
-        }
-        else if (GetAsyncKeyState(0x53) == 0) S = 0;
-        if ((GetAsyncKeyState(0x57) & 0x8000) && (W == 0)) {
-            ++W;
-            rGame.MoveUp();
-            OnRender();
-        }
-        else if (GetAsyncKeyState(0x57) == 0) W = 0;
     }
 }
 
@@ -155,6 +225,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 HRESULT pGraphics::CreateDeviceIndependentResources() {
     static const WCHAR msc_fontName[] = L"Comic Sans MS";
     static const FLOAT msc_fontSize = 16;
+
+    static const FLOAT msc_fontSizeBolt = 32;
+
     HRESULT hr;
 
     hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
@@ -175,7 +248,19 @@ HRESULT pGraphics::CreateDeviceIndependentResources() {
             DWRITE_FONT_STRETCH_NORMAL,
             msc_fontSize,
             L"",
-            &m_pTextFormat
+            &m_pText
+        );
+    }
+    if (SUCCEEDED(hr)) {
+        hr = m_pWriteFactory->CreateTextFormat(
+            msc_fontName,
+            NULL,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            DWRITE_FONT_STYLE_NORMAL,
+            DWRITE_FONT_STRETCH_NORMAL,
+            msc_fontSizeBolt,
+            L"",
+            &m_pTextBolt
         );
     }
 
@@ -311,8 +396,18 @@ HRESULT pGraphics::OnRender() {
         m_pRenderTarget->BeginDraw();
         m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
         m_pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
-        
-        /*for (int i = 1; i < rGame.GlobalObjectData.ObjectMapSize; ++i) {
+        m_pBlack->SetColor(D2D1::ColorF(D2D1::ColorF::Black));
+
+        /*D2D1_RECT_F area{
+            0,
+            0,
+            rGame.GlobalScreenData.size.first,
+            rGame.GlobalScreenData.size.second
+        };
+        m_pRenderTarget->DrawRectangle(&area, m_pBlack, 10);
+        */
+        //GlobalObjectMap render
+        for (int i = 1; i < rGame.GlobalObjectData.ObjectMapSize; ++i) {
             D2D1_RECT_F rect{//left //top //right // bottom
                 rGame.GlobalObjectData.objectMap.at(i).first + 10,
                 rGame.GlobalObjectData.objectMap.at(i).second,
@@ -320,46 +415,78 @@ HRESULT pGraphics::OnRender() {
                 rGame.GlobalObjectData.objectMap.at(i).second + 20
             };
             m_pRenderTarget->FillRectangle(&rect, m_pBlack);
-        }*/
-
-        D2D1_RECT_F rectObject{
-            rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).first + 10,
-            rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).second,
-            rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).first + 30,
-            rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).second + 20
-        };
-        m_pRenderTarget->FillRectangle(&rectObject, m_pRed);
-
-        D2D1_RECT_F rectS{//left //top //right // bottom
-                rGame.GlobalPlayerData.pixels.at(0).first + 10,
-                rGame.GlobalPlayerData.pixels.at(0).second,
-                rGame.GlobalPlayerData.pixels.at(0).first + 30,
-                rGame.GlobalPlayerData.pixels.at(0).second + 20
-        };
-        m_pRenderTarget->FillRectangle(&rectS, m_pYellow);
-
-        for (int i = 1; i < rGame.GlobalPlayerData.size; ++i) {
-            D2D1_RECT_F rect{//left //top //right // bottom
-                rGame.GlobalPlayerData.pixels.at(i).first + 10,
-                rGame.GlobalPlayerData.pixels.at(i).second,
-                rGame.GlobalPlayerData.pixels.at(i).first + 30,
-                rGame.GlobalPlayerData.pixels.at(i).second + 20
-            };
-            m_pRenderTarget->FillRectangle(&rect, m_pGreen);
         }
+        if (!rGame.GlobalScreenData.gameOver) {
+            D2D1_RECT_F rectObject{
+                rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).first + 10,
+                rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).second,
+                rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).first + 30,
+                rGame.GlobalObjectData.objectMap.at(rGame.GlobalObjectData.objectId).second + 20
+            };
+            m_pRenderTarget->FillRectangle(&rectObject, m_pRed);
 
-        std::string ss = "Size: ";
-        ss.append(std::to_string(rGame.GlobalPlayerData.size));
-        std::wstring ssr = std::wstring(ss.begin(), ss.end());
-        const wchar_t* result = ssr.c_str();
-        
-        m_pRenderTarget->DrawTextW(
-            result,
-            sizeof(result) + 1,
-            m_pTextFormat,
-            D2D1::RectF(10, 0, rGame.GlobalScreenData.size.first, rGame.GlobalScreenData.size.second),
-            m_pBlack
-        );
+            D2D1_RECT_F rectS{//left //top //right // bottom
+                    rGame.GlobalPlayerData.pixels.at(0).first + 10,
+                    rGame.GlobalPlayerData.pixels.at(0).second,
+                    rGame.GlobalPlayerData.pixels.at(0).first + 30,
+                    rGame.GlobalPlayerData.pixels.at(0).second + 20
+            };
+            m_pRenderTarget->FillRectangle(&rectS, m_pYellow);
+
+            for (int i = 1; i < rGame.GlobalPlayerData.size; ++i) {
+                D2D1_RECT_F rect{//left //top //right // bottom
+                    rGame.GlobalPlayerData.pixels.at(i).first + 10,
+                    rGame.GlobalPlayerData.pixels.at(i).second,
+                    rGame.GlobalPlayerData.pixels.at(i).first + 30,
+                    rGame.GlobalPlayerData.pixels.at(i).second + 20
+                };
+                m_pRenderTarget->FillRectangle(&rect, m_pGreen);
+            }
+
+            std::string ss = "Size: ";
+            ss.append(std::to_string(rGame.GlobalPlayerData.size));
+            std::wstring ssr = std::wstring(ss.begin(), ss.end());
+            const wchar_t* result = ssr.c_str();
+
+            m_pRenderTarget->DrawTextW(
+                result,
+                sizeof(result) + 1,
+                m_pText,
+                D2D1::RectF(10, 0, rGame.GlobalScreenData.size.first, rGame.GlobalScreenData.size.second),
+                m_pBlack
+            );
+        }
+        else {
+            m_pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
+
+            std::string str = "Game Over!";
+            std::wstring wstr = std::wstring(str.begin(), str.end());
+            const wchar_t* result = wstr.c_str();
+
+            m_pTextBolt->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+            m_pText->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+
+            m_pRenderTarget->DrawTextW(
+                result,
+                sizeof(result) + 1,
+                m_pTextBolt, 
+                D2D1::RectF(0, 0, rGame.GlobalScreenData.size.first, rGame.GlobalScreenData.size.second), 
+                m_pBlack
+            );
+            std::string ss = "Size: ";
+            ss.append(std::to_string(rGame.GlobalPlayerData.size));
+            std::wstring ssr = std::wstring(ss.begin(), ss.end());
+            const wchar_t* res = ssr.c_str();
+
+            m_pRenderTarget->DrawTextW(
+                res,
+                sizeof(res) + 1,
+                m_pText,
+                D2D1::RectF(0, 40, rGame.GlobalScreenData.size.first, rGame.GlobalScreenData.size.second),
+                m_pBlack
+            );
+
+        }
         hr = m_pRenderTarget->EndDraw();
     }
     if (hr == D2DERR_RECREATE_TARGET) {
@@ -373,6 +500,7 @@ void pGraphics::OnResize(UINT width, UINT height) {
     if (m_pRenderTarget) {
         m_pRenderTarget->Resize(D2D1::SizeU(width, height));
         rGame.GlobalScreenData.size = std::make_pair(m_pRenderTarget->GetSize().width, m_pRenderTarget->GetSize().height);
+        rGame.GenerateObjectMap();
     }
 }
 

@@ -1,1 +1,2 @@
 D:\Desktop\Snake\x64\Debug\Snake.exe
+D:\Documents\GitHub\Snake\x64\Debug\Snake.exe
