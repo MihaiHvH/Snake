@@ -31,6 +31,8 @@ private:
     ID2D1HwndRenderTarget* m_pRenderTarget;
     ID2D1SolidColorBrush* m_pRed;
     ID2D1SolidColorBrush* m_pGreen;
+    ID2D1SolidColorBrush* m_pMapGreen1;
+    ID2D1SolidColorBrush* m_pMapGreen2;
     ID2D1SolidColorBrush* m_pBlack;
     ID2D1SolidColorBrush* m_pYellow;
     IDWriteTextFormat* m_pText;

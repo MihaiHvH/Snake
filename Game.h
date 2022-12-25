@@ -12,7 +12,7 @@ public:
 
 		void GenerateStartPos();
 
-		void UpdatePixels(std::pair<int, int> NewPos);
+		void UpdatePixels(int NewPos);
 
 		void Grow();
 
@@ -21,12 +21,13 @@ public:
 		void MoveUp();
 		void MoveDown();
 
-		bool IsPixelPos(std::pair<int, int> pixel, std::pair<int, int> detect, bool exact = false);
-		bool IsPixelPos(std::vector<std::pair<int, int>> pixel, std::pair<int, int> detect, bool exact = false);
-
 		void GenerateObjectMap();
 		void Spawn();
+		
+		bool BinarySearch(int n, std::vector<int> v);
+
+		void ClearAllData();
+
 private:
-	bool BinarySearch(int n, int max, std::vector<int> v);
 	int GenerateRandomNumber(int min, int max, std::vector<std::pair<int, int>>exclude = {});
 };
