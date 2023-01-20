@@ -1,5 +1,12 @@
 #include "main.h"
 
+void AutoMove(int dir = 0) {
+	while (1) {
+		if (dir != 0)
+			std::cout << "ASMOKUS";
+	}
+}
+
 int main() {
 #ifdef _DEBUG
 	std::cout << "-------------------DEBUG-------------------" << '\n';
@@ -25,9 +32,13 @@ int main() {
 	std::cout << "Screen size X: " << Graphics.rGame.GlobalScreenData.size.first << " Y: " << Graphics.rGame.GlobalScreenData.size.second << '\n';
 #endif // DEBUG
 
+	std::thread Render(&pGraphics::OnRender, &Graphics);
+	Render.join();
 	
-	Graphics.OnRender();
-	Graphics.RunMessageLoop();
+	//Graphics.RunMessageLoop();
+
+	std::thread MessageLoop(&pGraphics::RunMessageLoop, &Graphics);
+	//MessageLoop.join();
 
 	return 0;
 }

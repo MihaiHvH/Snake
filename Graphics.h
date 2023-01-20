@@ -8,7 +8,6 @@ public:
 	HRESULT Initialize();
 	void RunMessageLoop();
 
-
     pGame rGame;
     std::pair<int, int> getScreenSize();
     HRESULT OnRender();

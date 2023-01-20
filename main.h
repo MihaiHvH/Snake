@@ -17,6 +17,8 @@
 #include <vector>
 #include <string>
 
+#include <thread>
+
 #include "Game.h"
 #include "GameData.h"
 #include "Graphics.h"

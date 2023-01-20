@@ -108,7 +108,7 @@ void pGraphics::RunMessageLoop() {
                     rGame.GlobalObjectData.spawned = false;
                     rGame.Spawn();
                 }
-                else if (rGame.GlobalPlayerData.pos.first >= (rGame.GlobalScreenData.size.second / 30 * (rGame.GlobalScreenData.size.first / 30)) - 1 - rGame.GlobalScreenData.size.first / 30 or rGame.GlobalPlayerData.pos.first >= (rGame.GlobalScreenData.size.second / 30 * rGame.GlobalScreenData.size.first / 30) - 1 or rGame.BinarySearch(rGame.GlobalPlayerData.pos.first + rGame.GlobalScreenData.size.first / 30, rGame.GlobalPlayerData.pixels)) {
+                else if (rGame.GlobalPlayerData.pos.first >= (rGame.GlobalScreenData.size.second / 30 * (rGame.GlobalScreenData.size.first / 30)) - rGame.GlobalScreenData.size.first / 30 or rGame.GlobalPlayerData.pos.first >= (rGame.GlobalScreenData.size.second / 30 * rGame.GlobalScreenData.size.first / 30) - 1 or rGame.BinarySearch(rGame.GlobalPlayerData.pos.first + rGame.GlobalScreenData.size.first / 30, rGame.GlobalPlayerData.pixels)) {
                     rGame.GlobalScreenData.gameOver = true;
                 }
                 else {
